@@ -1,0 +1,36 @@
+<table border="1">
+    <tr>
+        <th>DID</th>
+        <th>Name</th>
+        <th>Budget</th>
+        <th>Location</th>
+        <th>Delete</th>
+            
+    </tr>
+
+    <% dept.forEach((d)=> { %>
+        <tr>
+            <td>
+                <%= d.did %>
+            </td>
+            <td>
+                <%= d.dname %>
+            </td>
+            <td>
+                <%= d.lid %>
+            </td>
+            <td>
+                <%= d.budget %>
+            </td>
+          
+            <td>
+                <a href="/depts/delete/<%=d.did%>">Delete</a>
+            </td>
+            
+
+          
+        </tr>
+        <% }) %>
+
+
+</table>

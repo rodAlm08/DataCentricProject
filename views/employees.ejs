@@ -1,0 +1,36 @@
+<table border="1">
+    <tr>
+        <th>EID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Salary</th>
+        <th>Update</th>
+            
+    </tr>
+
+    <% person.forEach((p)=> { %>
+        <tr>
+            <td>
+                <%= p.eid %>
+            </td>
+            <td>
+                <%= p.ename %>
+            </td>
+            <td>
+                <%= p.role %>
+            </td>
+            <td>
+                <%= p.salary %>
+            </td>
+          
+            <td>
+                <a href="/employees/edit/<%=p.eid%>">Update</a>
+            </td>
+            
+
+          
+        </tr>
+        <% }) %>
+
+
+</table>

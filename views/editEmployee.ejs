@@ -1,0 +1,18 @@
+<body>
+    
+    <h1>Update Student</h1>
+    <form action="/employees/edit/<%=person.eid %>" method="post">
+        <label>EID</label>
+        <input type="text" name="person.eid" value="<%=person.eid %>"><br>
+        <label>Name</label>
+        <input type="text" name="person.ename" value="<%=person.ename %>"><br>
+        <label>Role</label>      
+        <input type="text" name="person.role" value="<%=person.role %>"><br>
+        <label>Salary</label>
+        <input type="text" name="person.salary" value="<%=person.salary %>"><br>
+
+        <input type="submit" value="Edit">
+    </form>
+
+</body>
+
