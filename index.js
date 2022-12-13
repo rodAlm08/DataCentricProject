@@ -1,10 +1,18 @@
 var express = require('express')
 var app = express()
-
-const ejs = require('ejs')
-app.set('view engine', 'ejs')
+var bodyParser = require('body-parser')
 var mySqlDAO = require('./mySqlDAO')//import the functions
+const ejs = require('ejs')
+const { check, validationResult } = require('express-validator');
 
+var express = require('express')
+var mongoDAO = require('./mongoDAO')
+var app = express()
+
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.set('view engine', 'ejs')
 
 
 app.get('/', (req, res) => {
@@ -38,24 +46,38 @@ app.get('/employees/edit/:eid', (req, res) => {
 
 })
 
-app.post('/employees/edit/:eid', (req, res) => {
-    var id = req.params.eid;
-    var name = req.body.name;
-  
-
-    console.log(name)
-    mySqlDAO.updateEmployee(id, name)
-        .then(() => {
-            //console.log("yessssss")
-            res.redirect('/employees')
+app.post('/employees/edit/:eid',
+    [
+        check("ename").isLength({ min: 5 })
+            .withMessage("Please enter the Name")
+    ],
 
 
-        })
-        .catch((error) => {
-            res.send(error)
-        })
+    (req, res) => {
+        var id = req.params.eid;
+        var name = req.body.ename;
+        var role = req.body.role;
+        var salary = req.body.salary;
 
-})
+        const errors = validationResult(name)
+        if (!errors.isEmpty()) {
+            res.render("editEmployee",
+                { errors: errors.errors })
+        } else {
+            mySqlDAO.updateEmployee(id, name, role, salary)
+                .then(() => {
+                    //console.log("yessssss")
+                    res.redirect('/employees')
+
+
+                })
+                .catch((error) => {
+                    res.send(error)
+                })
+        }
+
+
+    })
 
 
 app.get('/depts', (req, res) => {
@@ -63,11 +85,56 @@ app.get('/depts', (req, res) => {
         .then((data) => {
 
             res.render('depts', { 'dept': data })
+
         })
         .catch((error) => {
             res.send(error)
         })
 
+})
+// router to employees mongoDB
+app.get('/employeesMongoDB', (req, res) => {
+
+    mongoDAO.findAll()
+        .then((data) => {
+            //res.send(data)
+            res.render('employeesMongoDB', { 'person': data })
+        })
+        .catch((error) => {
+            res.send(error)
+        })
+
+})
+
+app.get('/employeesMongoDB/add', (req, res) => {
+
+   res.render('addMongoDBemployee')
+
+})
+
+app.post('/employeesMongoDB', (req, res) => {
+    var eid = req.params.eid;
+    var phone = req.body.ename;
+    var email = req.body.role;
+
+
+    mongoDAO.addEmployeeMongoDB({
+        _id: eid,
+        phone: phone,
+        email: email
+    })
+        .then((data) => {
+            // Do Something
+            res.render('addMongoDBemployee')
+
+        })
+        .catch((error) => {
+            if (error.message.includes("E11000")) {
+                res.send("Error _id:6 already exists")
+            } else {
+                res.send(error.message)
+            }
+        })
 })
 
 

@@ -94,9 +94,9 @@ var getUniqueEmployee = function (id) {
 }
 
 
-var updateEmployee = function (id, name) {
-    var query2 = `UPDATE employee SET ename="${name}" WHERE eid= "${id}" `;
-    
+var updateEmployee = function (id, name, role, salary) {
+    var query2 = `UPDATE employee SET ename="${name}", role="${role}", salary="${salary}" WHERE eid= "${id}" `;
+    console.log(query2)
     return new Promise((resolve, reject) => {
         pool.query(query2)
             .then((data) => {
