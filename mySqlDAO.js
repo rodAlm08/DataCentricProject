@@ -116,12 +116,36 @@ var updateEmployee = function (id, name, role, salary) {
     })
 }
 
+var deleteDept = function(dept){
+    var delQuery = `DELETE FROM dept WHERE did="${dept}";`
+    console.log(delQuery)
+    
+    return new Promise((resolve, reject)=>{
+        pool.query(delQuery)
+        .then((data) => {
+            resolve(data)
+        })
+        .catch(() => {
+            reject(error.sqlMessage)
+
+            if (error.errno == 1146) {
+                res.send("Error - table doesn't exist")
+            }
+
+            else {
+                res.send(error.sqlMessage)
+            }
+        })
+    })
+}
+
 //export the function
 module.exports = {
     getEmployees,
     updateEmployee,
     getUniqueEmployee,
-    getDepts
+    getDepts,
+    deleteDept
 }
 
 

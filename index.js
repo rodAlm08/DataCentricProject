@@ -37,8 +37,11 @@ app.get('/employees/edit/:eid', (req, res) => {
     mySqlDAO.getUniqueEmployee(id)
         .then((data) => {
             //console.log(data)
-
-            res.render('editEmployee', { 'person': data[0] })
+            //check if data.lenght > 0
+            if(data.length > 0){
+                res.render('editEmployee', { 'person': data[0] , 'errors': undefined})
+            }
+            
         })
         .catch((error) => {
             res.send(error)
@@ -49,9 +52,16 @@ app.get('/employees/edit/:eid', (req, res) => {
 app.post('/employees/edit/:eid',
     [
         check("ename").isLength({ min: 5 })
-            .withMessage("Please enter the Name")
+            .withMessage("Name must be > 5")
+    ], 
+    [
+        check("role").toUpperCase().isIn(["MANAGER", "EMPLOYEE"])
+            .withMessage("Role should be Manager or Employee")
     ],
-
+    [
+        check("salary").isInt({ min:0})
+            .withMessage("Salary should be > 0")
+    ],
 
     (req, res) => {
         var id = req.params.eid;
@@ -59,10 +69,10 @@ app.post('/employees/edit/:eid',
         var role = req.body.role;
         var salary = req.body.salary;
 
-        const errors = validationResult(name)
+        const errors = validationResult(req)
         if (!errors.isEmpty()) {
             res.render("editEmployee",
-                { errors: errors.errors })
+                { errors: errors.errors, 'person' : {eid: id, ename:name, role:role, salary:salary}  })
         } else {
             mySqlDAO.updateEmployee(id, name, role, salary)
                 .then(() => {
@@ -92,6 +102,14 @@ app.get('/depts', (req, res) => {
         })
 
 })
+
+app.delete('/depts', (req, res) => {
+    res.send('Got a DELETE request at /user')
+  })
+
+
+
+
 // router to employees mongoDB
 app.get('/employeesMongoDB', (req, res) => {
 

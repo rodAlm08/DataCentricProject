@@ -2,6 +2,16 @@
 
     <h1>Update Student</h1>
 
+    <% if (errors !=undefined) { %>
+        <ul>
+            <% errors.forEach((error)=> { %>
+                <li>
+                    <%= error.msg %>
+                </li>
+                <% }) %>
+        </ul>
+        <% } %>
+        
             <form action="/employees/edit/<%=person.eid %>" method="post">
                 <label>EID</label>
                 <input type="text" name="eid" value="<%=person.eid %>" readonly><br>
