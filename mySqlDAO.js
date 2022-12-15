@@ -76,7 +76,7 @@ var getUniqueEmployee = function (id) {
     return new Promise((resolve, reject) => {
         pool.query(query3)
             .then((data) => {
-                console.log(data)
+                //console.log(data)
                 resolve(data)
             })
             .catch(() => {
@@ -96,13 +96,13 @@ var getUniqueEmployee = function (id) {
 
 var updateEmployee = function (id, name, role, salary) {
     var query2 = `UPDATE employee SET ename="${name}", role="${role}", salary="${salary}" WHERE eid= "${id}" `;
-    console.log(query2)
+    //console.log(query2)
     return new Promise((resolve, reject) => {
         pool.query(query2)
             .then((data) => {
                 resolve(data)
             })
-            .catch(() => {
+            .catch((error) => {
                 reject(error.sqlMessage)
 
                 if (error.errno == 1146) {
@@ -111,31 +111,33 @@ var updateEmployee = function (id, name, role, salary) {
 
                 else {
                     res.send(error.sqlMessage)
+                    console.log(error.sqlMessage)
                 }
             })
     })
 }
 
-var deleteDept = function(dept){
+var deleteDept = function (dept) {
     var delQuery = `DELETE FROM dept WHERE did="${dept}";`
     console.log(delQuery)
-    
-    return new Promise((resolve, reject)=>{
+
+    return new Promise((resolve, reject) => {
         pool.query(delQuery)
-        .then((data) => {
-            resolve(data)
-        })
-        .catch(() => {
-            reject(error.sqlMessage)
-
-            if (error.errno == 1146) {
-                res.send("Error - table doesn't exist")
-            }
-
-            else {
-                res.send(error.sqlMessage)
-            }
-        })
+            .then((data) => {
+                resolve(data)
+            })
+            .catch((error) => {
+                reject(error)
+               /* 
+                if (error.errno == 1146) {
+                    //res.send("Error - table doesn't exist")
+                }
+                else if(error.errno == 1451){
+                    //res.send("Has employees and cannot be deleted")
+                } */
+               
+              
+            })
     })
 }
 
