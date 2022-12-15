@@ -26,7 +26,7 @@ var getEmployees = function () {
 
         pool.query(query1)
             .then((data) => {
-                console.log(data)
+                //console.log(data)
                 resolve(data)
 
             })
@@ -52,7 +52,7 @@ var getDepts = function () {
 
         pool.query(query4)
             .then((data) => {
-                console.log(data)
+                //console.log(data)
                 resolve(data)
 
             })
@@ -111,7 +111,7 @@ var updateEmployee = function (id, name, role, salary) {
 
                 else {
                     res.send(error.sqlMessage)
-                    console.log(error.sqlMessage)
+                    //console.log(error.sqlMessage)
                 }
             })
     })
@@ -128,15 +128,6 @@ var deleteDept = function (dept) {
             })
             .catch((error) => {
                 reject(error)
-               /* 
-                if (error.errno == 1146) {
-                    //res.send("Error - table doesn't exist")
-                }
-                else if(error.errno == 1451){
-                    //res.send("Has employees and cannot be deleted")
-                } */
-               
-              
             })
     })
 }

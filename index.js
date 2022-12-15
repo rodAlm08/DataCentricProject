@@ -8,6 +8,7 @@ const { check, validationResult } = require('express-validator');
 var express = require('express')
 var mongoDAO = require('./mongoDAO')
 var app = express()
+var mySqlIds = []; //will store MySQL DB ids
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -15,22 +16,43 @@ app.use(bodyParser.json())
 app.set('view engine', 'ejs')
 
 
+//home page
 app.get('/', (req, res) => {
-    res.render('home')
+
+    mySqlDAO.getEmployees()
+        .then((data) => {
+
+            res.render('home')
+            //store the MySQL db ids into an array to check it later
+            //when adding a employees into MongoDB
+            for (let i = 0; i < data.length; i++) {
+                mySqlIds[i] = data[i].eid;
+            }
+            //console.log(mySqlIds);
+        })
+        .catch((error) => {
+            res.send(error)
+        })
 })
 
+//route /employees
 app.get('/employees', (req, res) => {
     mySqlDAO.getEmployees()
         .then((data) => {
 
             res.render('employees', { 'person': data })
+            for (let i = 0; i < data.length; i++) {
+                mySqlIds[i] = data[i].eid;
+
+            }
+            //console.log(mySqlIds);
         })
         .catch((error) => {
             res.send(error)
         })
-
 })
 
+//route edit employees to get the unique id
 app.get('/employees/edit/:eid', (req, res) => {
     var id = req.params.eid;
 
@@ -41,26 +63,26 @@ app.get('/employees/edit/:eid', (req, res) => {
             if (data.length > 0) {
                 res.render('editEmployee', { 'person': data[0], 'errors': undefined })
             }
-
         })
         .catch((error) => {
             res.send(error)
         })
-
 })
 
+//send the edit via POST method
 app.post('/employees/edit/:eid',
-    [
+    //run validation checks for name, role and salary
+    [   //name must be at least 5 char
         check("ename").isLength({ min: 5 })
-            .withMessage("Name must be > 5")
+            .withMessage("Employee Name must be at least 5 characters")
     ],
-    [
+    [   //Role can be either Manager or Employee
         check("role").toUpperCase().isIn(["MANAGER", "EMPLOYEE"])
-            .withMessage("Role should be Manager or Employee")
+            .withMessage("Role can be either Manager or Employee")
     ],
-    [
+    [   //Salary must be > 0 and float
         check("salary").isFloat({ min: 0 })
-            .withMessage("Salary should be > 0")
+            .withMessage("Salary must be > 0")
     ],
 
     (req, res) => {
@@ -68,12 +90,14 @@ app.post('/employees/edit/:eid',
         var name = req.body.ename;
         var role = req.body.role;
         var salary = req.body.salary;
-
+        //store validation errors
         const errors = validationResult(req)
+        //if errors returned render editEmployee and for the error messages to be displayed
         if (!errors.isEmpty()) {
             res.render("editEmployee",
                 { errors: errors.errors, 'person': { eid: id, ename: name, role: role, salary: salary } })
         } else {
+            //no errors from validation update employee
             mySqlDAO.updateEmployee(id, name, role, salary)
                 .then(() => {
                     //console.log("yessssss")
@@ -83,19 +107,15 @@ app.post('/employees/edit/:eid',
                     res.send(error)
                 })
         }
-
-
     })
 
-
+//load departments
 app.get('/depts', (req, res) => {
-
 
     mySqlDAO.getDepts()
         .then((data) => {
-
             res.render('depts', { 'dept': data })
-            console.log(data)
+            //console.log(data)
 
         })
         .catch((error) => {
@@ -105,6 +125,7 @@ app.get('/depts', (req, res) => {
 
 })
 
+//delete departments
 app.get('/depts/delete/:did',
 
     (req, res) => {
@@ -116,6 +137,8 @@ app.get('/depts/delete/:did',
                 res.redirect('/depts')
             })
             .catch((error) => {
+                //if dept has employees it can't be deleted
+                //will return error 1451. Check it and display msg to the user
                 console.log(error);
                 if (error.errno == 1451) {
                     res.send(`
@@ -131,9 +154,6 @@ app.get('/depts/delete/:did',
             })
     })
 
-
-
-
 // router to employees mongoDB
 app.get('/employeesMongoDB', (req, res) => {
 
@@ -148,64 +168,87 @@ app.get('/employeesMongoDB', (req, res) => {
 
 })
 
+//load add employee page
 app.get('/employeesMongoDB/add', (req, res) => {
 
-    res.render('addMongoDBemployee', {'errors': undefined})
+    res.render('addMongoDBemployee', { 'errors': undefined })
 
 })
 
+//add employee to the MongoDB DB
+//it can only happen if the id already exists on MySQL DB
+//if doesn't display a message
 app.post('/employeesMongoDB/add/',
-
-    [
+    //run validations for fields id, phone and email
+    [   //EID must be 4 characters
         check("_id").isLength({ min: 4, max: 4 })
             .withMessage("EID must be 4 characters")
     ],
-    [
+    [   //Phone must be > 5 characters
         check("phone").isLength({ min: 5 })
             .withMessage("Phone must be > 5 characters")
     ],
-    [
-        check("email").isEmail()
+    [   //Phone must be numbers
+        check("phone").isInt()
+            .withMessage("Phone must be numbers")
+    ],
+    [   //Email must be a valid email address
+        check("email").isEmail().toLowerCase()
             .withMessage("Email must be a valid email address")
     ],
 
     (req, res) => {
-        var _id = req.body._id;
+        var _id = req.body._id.toUpperCase();
         var phone = req.body.phone;
-        var email = req.body.email;
+        var email = req.body.email.toLowerCase();
 
-        const errors = validationResult(req)
-        console.log(errors)
-        if (!errors.isEmpty()) {
-            res.render("addMongoDBemployee",
-                { errors: errors.errors, 'person': { _id: _id, phone:phone, email:email } })
-        
+        //check if the id is on the MySQL DB
+        const isFound = mySqlIds.includes(_id);
+        console.log(isFound);
+        //if not found return a message
+        if (!isFound) {
+            res.send(`
+            <h1>Error Message</h1>
+            <br/>
+            <br/>
+            <h1>Employee ${_id} doesn't exist in MySQL DB</h1>
+            <a href="/">Home</a>                    
+            `)
+            //else keep going
         } else {
+            //run the validation checks for id, phone and email
+            const errors = validationResult(req)
+            //  console.log(errors)
+            if (!errors.isEmpty()) {
+                //if errors return NOT empty render add page with errors
+                res.render("addMongoDBemployee",
+                    { errors: errors.errors, 'person': { _id: _id, phone: phone, email: email } })
 
-            mongoDAO.addEmployeeMongoDB(_id, phone, email)
-                .then(() => {
+            } else {
+                //no error returned keep goin to the function
+                mongoDAO.addEmployeeMongoDB(_id, phone, email)
+                    .then(() => {
+                        //once employee is added redirect the page to employeesMongoDB
+                        res.redirect('/employeesMongoDB')
 
-                    res.redirect('/employeesMongoDB')
-
-                })
-                .catch((error) => {
-                    if (error.message.includes(_id)) {
-                        res.send(`
+                    })
+                    //if reject is sent from DB display errror message
+                    .catch((error) => {
+                        if (error.message.includes(_id)) {
+                            res.send(`
                         <h1>Error Message</h1>
                         <br/>
                         <br/>
                         <h1>EID ${_id} already exist in MongoDB</h1>
+                       
                         <a href="/">Home</a>                    
                         `)
-                    } else {
-                        res.send(error.message)
-                    }
-                })
-
-
+                        } else {
+                            res.send(error.message)
+                        }
+                    })
+            }
         }
-
-
     })
 
 
