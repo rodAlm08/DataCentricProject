@@ -59,7 +59,7 @@ app.post('/employees/edit/:eid',
             .withMessage("Role should be Manager or Employee")
     ],
     [
-        check("salary").isInt({ min: 0 })
+        check("salary").isFloat({ min: 0 })
             .withMessage("Salary should be > 0")
     ],
 
@@ -78,8 +78,6 @@ app.post('/employees/edit/:eid',
                 .then(() => {
                     //console.log("yessssss")
                     res.redirect('/employees')
-
-
                 })
                 .catch((error) => {
                     res.send(error)
@@ -124,7 +122,11 @@ app.get('/depts/delete/:did',
                     <h1>Error Message</h1>
                     <br/>
                     <br/>
-                    <h1>${depId} has employees and cannot be deleted</h1>`)
+                    <h1>${depId} has employees and cannot be deleted</h1>
+                    <a href="/">Home</a> 
+                    <br/>
+                    <a href="/depts">Back</a> 
+                    `)
                 }
             })
     })
@@ -148,34 +150,63 @@ app.get('/employeesMongoDB', (req, res) => {
 
 app.get('/employeesMongoDB/add', (req, res) => {
 
-    res.render('addMongoDBemployee')
+    res.render('addMongoDBemployee', {'errors': undefined})
 
 })
 
-app.post('/employeesMongoDB', (req, res) => {
-    var eid = req.params.eid;
-    var phone = req.body.ename;
-    var email = req.body.role;
+app.post('/employeesMongoDB/add/',
+
+    [
+        check("_id").isLength({ min: 4, max: 4 })
+            .withMessage("EID must be 4 characters")
+    ],
+    [
+        check("phone").isLength({ min: 5 })
+            .withMessage("Phone must be > 5 characters")
+    ],
+    [
+        check("email").isEmail()
+            .withMessage("Email must be a valid email address")
+    ],
+
+    (req, res) => {
+        var _id = req.body._id;
+        var phone = req.body.phone;
+        var email = req.body.email;
+
+        const errors = validationResult(req)
+        console.log(errors)
+        if (!errors.isEmpty()) {
+            res.render("addMongoDBemployee",
+                { errors: errors.errors, 'person': { _id: _id, phone:phone, email:email } })
+        
+        } else {
+
+            mongoDAO.addEmployeeMongoDB(_id, phone, email)
+                .then(() => {
+
+                    res.redirect('/employeesMongoDB')
+
+                })
+                .catch((error) => {
+                    if (error.message.includes(_id)) {
+                        res.send(`
+                        <h1>Error Message</h1>
+                        <br/>
+                        <br/>
+                        <h1>EID ${_id} already exist in MongoDB</h1>
+                        <a href="/">Home</a>                    
+                        `)
+                    } else {
+                        res.send(error.message)
+                    }
+                })
 
 
-    mongoDAO.addEmployeeMongoDB({
-        _id: eid,
-        phone: phone,
-        email: email
+        }
+
+
     })
-        .then((data) => {
-            // Do Something
-            res.render('addMongoDBemployee')
-
-        })
-        .catch((error) => {
-            if (error.message.includes("E11000")) {
-                res.send("Error _id:6 already exists")
-            } else {
-                res.send(error.message)
-            }
-        })
-})
 
 
 

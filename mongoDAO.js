@@ -22,11 +22,14 @@ var findAll = function () {
     })
 }
 
-var addEmployeeMongoDB = function (employee) {
+var addEmployeeMongoDB = function (_id, phone, email) {
     return new Promise((resolve, reject) => {
-        coll.insertOne(employee)
-            .then((documents) => {
-                resolve(documents)
+
+        coll.insertOne({"_id":_id, "phone": phone, "email":email })
+        
+            .then((result) => {
+                resolve(result)
+                
             })
             .catch((error) => {
                 reject(error)

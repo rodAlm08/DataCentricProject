@@ -1,15 +1,24 @@
 <body>
 
     <h1>Add Student (MongoDB)</h1>
+    <% if (errors !=undefined) { %>
+        <ul>
+            <% errors.forEach((error)=> { %>
+                <li>
+                    <%= error.msg %>
+                </li>
+                <% }) %>
+        </ul>
+        <% } %>
 
-            <form action="/employeesMongoDB/add>" method="post">
+            <form action="/employeesMongoDB/add" method="post">
                 <label>EID</label>
-                <input type="text" name="eid" value=""><br>
+                <input type="text" name="_id" value=""><br>
                 <label>Phone</label>
                 <input type="text" name="phone" value=""><br>
                 <label>Email</label>
                 <input type="text" name="email" value="">
-               
+
                 <input type="submit" value="Add">
             </form>
 
