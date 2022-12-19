@@ -1,0 +1,35 @@
+<body>
+
+    <h1>ADD Employee (MySQL)</h1>
+
+    <% if (errors !=undefined) { %>
+        <ul>
+            <% errors.forEach((error)=> { %>
+                <li>
+                    <%= error.msg %>
+                </li>
+                <% }) %>
+        </ul>
+        <% } %>
+        <!-- id has to be read only -->
+            <form action="/employees/add" method="post">
+                <label>EID</label>
+                <input type="text" name="eid" value="" ><br>
+                <label>Name</label>
+                <input type="text" name="ename" value=""><br>
+                <label>Role</label>
+                <input type="text" name="role" value=""><br>
+                <label>Salary</label>
+                <input type="text" name="salary" value=""><br>
+                <label>Department</label>
+                <input type="text" name="dept" value=""><br>
+
+                <input type="submit" value="Add">
+            </form>
+
+</body>
+
+<ul></ul>
+<a href="/employees">Back</a>
+<br>
+<a href="/">Home</a>

@@ -37,8 +37,24 @@ var addEmployeeMongoDB = function (_id, phone, email) {
     })
 }
 
+var deleteEmployeeMongoDB = function (_id, phone, email) {
+    return new Promise((resolve, reject) => {
+
+        coll.deleteOne({"_id":_id })
+        
+            .then((result) => {
+                resolve(result)
+                
+            })
+            .catch((error) => {
+                reject(error)
+            })
+    })
+}
+
 //export the function
 module.exports = {
     findAll,
-    addEmployeeMongoDB
+    addEmployeeMongoDB,
+    deleteEmployeeMongoDB
 }

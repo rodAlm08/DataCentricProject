@@ -154,9 +154,10 @@ app.get('/depts/delete/:did',
             })
     })
 
+
+
 // router to employees mongoDB
 app.get('/employeesMongoDB', (req, res) => {
-
     mongoDAO.findAll()
         .then((data) => {
             //res.send(data)
@@ -170,7 +171,6 @@ app.get('/employeesMongoDB', (req, res) => {
 
 //load add employee page
 app.get('/employeesMongoDB/add', (req, res) => {
-
     res.render('addMongoDBemployee', { 'errors': undefined })
 
 })
@@ -250,9 +250,128 @@ app.post('/employeesMongoDB/add/',
             }
         }
     })
+// Outside requirements. Delete Employees details from both databases
+//delete employee MySql and mongoDB
+app.get('/employees/delete/:eid',
 
+    (req, res) => {
+        var empId = req.params.eid;
+        //console.log(depId)
+        mySqlDAO.deleteEmployee(empId)
+            .then(() => {
 
+            })
+            .catch((error) => {
+                //no error will come up because whatever is displayed
+                //has already pass a catch
+            })
+        mongoDAO.deleteEmployeeMongoDB(empId)
+            .then(() => {
+                //send a message to the user
+                res.send(`
+            <h1>Message</h1>
+            <br/>
+            <br/>
+            <h1>${empId} was deleted from the MySQL and Mongo Databases</h1>
+            <a href="/">Home</a> 
+            <br/>
+            <a href="/employees">Back</a> 
+            `)
 
+            })
+            .catch((error) => {
+                //no error will come up because whatever is displayed
+                //has already pass a catch
+            })
+    })
+
+//load add employee page
+app.get('/employees/add', (req, res) => {
+    res.render('addMySQL', { 'errors': undefined })
+
+})
+
+//add employee to the MYSQL db
+//if doesn't display a message
+app.post('/employees/add/',
+    //run validations for fields id, phone and email
+    [   //EID must be 4 characters
+        check("eid").isLength({ min: 4, max: 4 })
+            .withMessage("EID must be 4 characters")
+    ], //run validation checks for name, role and salary
+    [   //name must be at least 5 char
+        check("ename").isLength({ min: 5 })
+            .withMessage("Employee Name must be at least 5 characters")
+    ],
+    [   //Role can be either Manager or Employee
+        check("role").toUpperCase().isIn(["MANAGER", "EMPLOYEE"])
+            .withMessage("Role can be either Manager or Employee")
+    ],
+    [   //Salary must be > 0 and float
+        check("salary").isFloat({ min: 0 })
+            .withMessage("Salary must be > 0")
+    ],
+    [   //Role can be either Manager or Employee
+        check("dept").toUpperCase().isIn(["FIN", "HR", "OPS", "R&D", "SAL"])
+            .withMessage("Department can be either FIN- Finance, HR - Human Resources, OPS- Operations, R&D- Research & Devel or SAL- Sales")
+    ],
+
+    (req, res) => {
+
+        var eid = req.body.eid.toUpperCase();
+        var ename = req.body.ename.toUpperCase();
+        var role = req.body.role.toUpperCase();
+        var salary = req.body.salary;
+        var dept = req.body.dept;
+
+        //check if the id is on the MySQL DB
+        const isFound = mySqlIds.includes(eid);
+        // console.log(isFound);
+        //if found return a message as ID already exists
+        if (isFound) {
+            res.send(`
+            <h1>Error Message</h1>
+            <br/>
+            <br/>
+            <h1>Employee ${eid} already exist in MySQL DB</h1>
+            <a href="/">Home</a>                    
+            `)
+            //else keep going
+        } else {
+            //run the validation checks for id, phone and email
+            const errors = validationResult(req)
+            //  console.log(errors)
+            if (!errors.isEmpty()) {
+                //if errors return NOT empty render add page with errors
+                res.render("addMySQL",
+                    { errors: errors.errors, 'person': { eid: eid, ename: ename, role: role, salary: salary, dept: dept } })
+
+            } else {
+                //no error returned keep goin to the function
+                mySqlDAO.addEmployee(eid, ename, role, salary, dept)
+                    .then(() => {
+                        //once employee is added redirect the page to employeesMongoDB
+                        res.redirect('/employees')
+
+                    })
+                    //if reject is sent from DB display errror message
+                    .catch((error) => {
+                        if (error.message.includes(eid)) {
+                            res.send(`
+                        <h1>Error Message</h1>
+                        <br/>
+                        <br/>
+                        <h1>EID ${eid} already exist in MongoDB</h1>
+                       
+                        <a href="/">Home</a>                    
+                        `)
+                        } else {
+                            res.send(error.message)
+                        }
+                    })
+            }
+        }
+    })
 
 app.listen(3004, () => {
     console.log("Listening on port 3004")

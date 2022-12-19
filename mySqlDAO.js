@@ -132,13 +132,69 @@ var deleteDept = function (dept) {
     })
 }
 
+var deleteEmployee = function (employee) {
+    // var selQuery1 = `SELECT did FROM emp_dept WHERE eid="${employee}";`
+    var delQuery1 = `DELETE FROM emp_dept WHERE eid="${employee}";`
+    var delQuery2 = `DELETE FROM employee WHERE eid="${employee}";`
+
+    return new Promise((resolve, reject) => {
+        pool.query(delQuery1)
+            .then((data) => {
+                resolve(data)
+            })
+           .catch()//no catch as all the eid has already been checked
+        pool.query(delQuery2)
+            .then((data) => {
+                resolve(data)
+            })
+            .catch((error) => {
+                reject(error)
+            })
+    })
+}
+
+var addEmployee = function (id, name, role, salary, dept ) {
+
+    var addQuery1 = `INSERT INTO employee VALUES ("${id}","${name}", "${role}","${salary}");`
+    
+    var addQuery2 = `INSERT INTO emp_dept VALUES ("${id}","${dept}");`
+    
+    return new Promise((resolve, reject) => {
+        pool.query(addQuery1)
+            .then((data) => {
+                resolve(data)
+            })
+            .catch((error) => {
+                reject(error.sqlMessage)
+
+                if (error.errno == 1062) {//ERROR 1062 (23000): Duplicate entry
+                    res.send("Error - ID already exists")
+                }
+
+                else {
+                    res.send(error.sqlMessage)
+                    //console.log(error.sqlMessage)
+                }
+            })
+        pool.query(addQuery2)
+            .then((data) => {
+                resolve(data)
+            })
+            .catch((error) => {
+                reject(error)
+            })
+    })
+}
+
 //export the function
 module.exports = {
     getEmployees,
     updateEmployee,
     getUniqueEmployee,
     getDepts,
-    deleteDept
+    deleteDept,
+    deleteEmployee,
+    addEmployee
 }
 
 
