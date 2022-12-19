@@ -8,7 +8,7 @@ MongoClient.connect('mongodb://localhost:27017')//default port to mongodb
         console.log(error.message)
     })
 
-
+//find all 
 var findAll = function () {
     return new Promise((resolve, reject) => {
         var cursor = coll.find()
@@ -22,29 +22,24 @@ var findAll = function () {
     })
 }
 
+//add employee to db
 var addEmployeeMongoDB = function (_id, phone, email) {
     return new Promise((resolve, reject) => {
-
-        coll.insertOne({"_id":_id, "phone": phone, "email":email })
-        
+        coll.insertOne({ "_id": _id, "phone": phone, "email": email })
             .then((result) => {
                 resolve(result)
-                
             })
             .catch((error) => {
                 reject(error)
             })
     })
 }
-
+//delete employee to db
 var deleteEmployeeMongoDB = function (_id, phone, email) {
     return new Promise((resolve, reject) => {
-
-        coll.deleteOne({"_id":_id })
-        
+        coll.deleteOne({ "_id": _id })
             .then((result) => {
                 resolve(result)
-                
             })
             .catch((error) => {
                 reject(error)
