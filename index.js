@@ -3,6 +3,7 @@ var app = express()
 var bodyParser = require('body-parser')
 var mySqlDAO = require('./mySqlDAO')//import the functions
 const ejs = require('ejs')
+//validator
 const { check, validationResult } = require('express-validator');
 
 var express = require('express')
@@ -14,7 +15,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.set('view engine', 'ejs')
 
-
 //home page
 app.get('/', (req, res) => {
     mySqlDAO.getEmployees()
@@ -23,6 +23,7 @@ app.get('/', (req, res) => {
             //store the MySQL db ids into an array to check it later
             //when adding a employees into MongoDB
             for (let i = 0; i < data.length; i++) {
+                //adding the ids to the array to check later
                 mySqlIds[i] = data[i].eid;
             }
             //console.log(mySqlIds);
@@ -303,6 +304,7 @@ app.post('/employees/add/',
             .withMessage("Department can be either FIN- Finance, HR - Human Resources, OPS- Operations, R&D- Research & Devel or SAL- Sales")
     ],
     (req, res) => {
+        //load into the variables
         var eid = req.body.eid.toUpperCase();
         var ename = req.body.ename.toUpperCase();
         var role = req.body.role.toUpperCase();

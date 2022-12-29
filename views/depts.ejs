@@ -8,7 +8,6 @@
         <th>Budget</th>
         <th>Location</th>
         <th>Delete</th>
-            
     </tr>
 
     <% dept.forEach((d)=> { %>
@@ -25,13 +24,10 @@
             <td>
                 <%= d.budget %>
             </td>
-          
+
             <td>
                 <a href="/depts/delete/<%=d.did%>">Delete</a>
             </td>
-            
-
-          
         </tr>
         <% }) %>
 

@@ -1,7 +1,9 @@
 const MongoClient = require('mongodb').MongoClient
 MongoClient.connect('mongodb://localhost:27017')//default port to mongodb
     .then((client) => {
+        //name of the database I am using 
         db = client.db('project2022')
+        //name of the collection
         coll = db.collection('employees')
     })
     .catch((error) => {

@@ -2,7 +2,7 @@
 var pmysql = require('promise-mysql')
 var pool
 
-
+//promise MySql
 pmysql.createPool({
     connectionLimit: 3,
     host: 'localhost',

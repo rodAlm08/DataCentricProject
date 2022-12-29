@@ -11,9 +11,7 @@
         <th>Salary</th>
         <th>Update</th>
         <th>Delete</th>
-
     </tr>
-
     <!-- loop person and foreach person display elements -->
     <% person.forEach((p)=> { %>
         <tr>
@@ -29,24 +27,15 @@
             <td>
                 <%= p.salary %>
             </td>
-
             <td>
                 <a href="/employees/edit/<%=p.eid%>">Update</a>
             </td>
-
             <td>
                 <a href="/employees/delete/<%=p.eid%>">Delete</a>
-
             </td>
-
-
-
         </tr>
         <% }) %>
-
-
 </table>
 <ul></ul>
-
 
 <a href="/">Home</a>
